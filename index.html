@@ -1,0 +1,58 @@
+<title>Subdomain Check</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+  /* Layout: one narrow column, a host readout split into its DNS labels */
+  :root {
+    --bg: #f5f7f6; --fg: #17201c; --muted: #5b6862; --line: #d6ddd9; --accent: #0f7a5a;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #111715; --fg: #e4ebe7; --muted: #94a39c; --line: #2a3430; --accent: #4cc79d; color-scheme: dark }
+  }
+  :root[data-theme="dark"] { --bg: #111715; --fg: #e4ebe7; --muted: #94a39c; --line: #2a3430; --accent: #4cc79d; color-scheme: dark }
+  body { background: var(--bg); color: var(--fg); font-family: var(--sans); padding: 48px 16px; }
+  main { max-width: 36rem; margin: 0 auto; display: grid; gap: 24px; }
+  h1 { font-size: 1.5rem; margin: 0; text-wrap: balance; }
+  p { margin: 0; color: var(--muted); line-height: 1.5; }
+  .host { font-family: var(--mono); font-size: 1.25rem; overflow-wrap: anywhere; padding-block: 16px; border-block: 1px solid var(--line); }
+  .host .sub { color: var(--accent); font-weight: 600; }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; margin: 0; }
+  dt { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); align-self: center; }
+  dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere; min-width: 0; }
+</style>
+
+<main>
+  <h1>Subdomain Check</h1>
+  <p>Shows which host served this page and splits it into the subdomain and the registered domain.</p>
+  <div class="host" id="host"></div>
+  <dl>
+    <dt>Subdomain</dt><dd id="sub"></dd>
+    <dt>Domain</dt><dd id="domain"></dd>
+    <dt>Labels</dt><dd id="labels"></dd>
+    <dt>Protocol</dt><dd id="proto"></dd>
+  </dl>
+</main>
+
+<script>
+  const host = location.hostname || "localhost";
+  const labels = host.split(".");
+  // Naive split: assumes a two-label registered domain (example.com), not example.co.uk.
+  const isIp = /^[\d.]+$/.test(host) || host.includes(":");
+  const domain = isIp || labels.length < 2 ? host : labels.slice(-2).join(".");
+  const sub = isIp || labels.length <= 2 ? "" : labels.slice(0, -2).join(".");
+
+  const hostEl = document.getElementById("host");
+  if (sub) {
+    const s = document.createElement("span");
+    s.className = "sub";
+    s.textContent = sub;
+    hostEl.append(s, "." + domain);
+  } else {
+    hostEl.textContent = host;
+  }
+  document.getElementById("sub").textContent = sub || "(none)";
+  document.getElementById("domain").textContent = domain;
+  document.getElementById("labels").textContent = labels.length;
+  document.getElementById("proto").textContent = location.protocol.replace(":", "");
+</script>
